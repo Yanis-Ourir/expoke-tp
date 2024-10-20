@@ -10,6 +10,7 @@ import { SearchBar } from "./components/SearchBar";
 import { useState } from "react";
 import { Row } from "./components/Row";
 import { SortButton } from "./components/SortButton";
+import { RootView } from "./components/RootView";
 
 export default function Index() {
    const colors = useThemeColors();
@@ -26,7 +27,7 @@ export default function Index() {
    
 
     return (
-    <SafeAreaView style={[styles.container, {backgroundColor: colors.tint}]}>
+    <RootView>
       <Row style={styles.header} gap={16}>
         <Image source={require("@/assets/images/Pokeball.png")} width={24} height={24}/>
         <ThemedText variant="headline" color="grayLight">Pokédex</ThemedText>
@@ -49,15 +50,11 @@ export default function Index() {
           <PokemonCard id={item.id} name={item.name} style={{flex: 1/3}}/>
         )} keyExtractor={(item) => item.id.toString()}/>
       </Card>
-    </SafeAreaView>
+    </RootView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 4,
-  },
   header: {
     paddingHorizontal: 12,
     paddingVertical: 8

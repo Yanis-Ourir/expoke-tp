@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TextProps } from "react-native"
+import { StyleSheet, Text, TextProps, TextStyle } from "react-native"
 import { useThemeColors } from "../hooks/useThemeColors";
 import { Colors } from "../constants/Colors";
 
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
 type Props = TextProps & {
     variant?: keyof typeof styles,
     color?: keyof typeof Colors["light"]
-    style?: any
+    style?: TextStyle
 }
 
 
