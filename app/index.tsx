@@ -1,4 +1,3 @@
-import { Link } from "expo-router";
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "./components/ThemedText";
@@ -17,13 +16,14 @@ export default function Index() {
    const {data, isFetching, fetchNextPage} = useInfiniteFetchQuery("/pokemon?limit=21");
    const pokemons = data?.pages.flatMap(page => page.results.map(res => ({name: res.name, id: getPokemonId(res.url)}))) ?? [];
    const [search, setSearch] = useState("");
+   const [sortKey, setSortKey] = useState<"id" | "name">("id");
    const filteredPokemons = [...(
       search ? pokemons.filter(
           pokemon => pokemon.name.includes(search.toLowerCase()) || 
           pokemon.id.toString() === search
       ) : pokemons
-    )].sort((a, b) => a[sortKey] > b[sortKey] ? -1 : 1);
-   const [sortKey, setSortKey] = useState<"id" | "name">("id");
+    )].sort((a, b) => a[sortKey] < b[sortKey] ? -1 : 1);
+   
 
     return (
     <SafeAreaView style={[styles.container, {backgroundColor: colors.tint}]}>
