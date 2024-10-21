@@ -47,7 +47,7 @@ export default function Index() {
           }
           onEndReached={search ? undefined : () => fetchNextPage()}
           renderItem={({item}) => (
-          <PokemonCard id={item.id} name={item.name} style={{flex: 1/3}}/>
+          <PokemonCard id={item.id} name={item.name} style={{flex: 1/3}} key={item.id}/>
         )} keyExtractor={(item) => item.id.toString()}/>
       </Card>
     </RootView>

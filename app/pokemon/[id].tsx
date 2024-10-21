@@ -6,7 +6,7 @@ import { ThemedText } from "../components/ThemedText";
 import useFetchQuery from "../hooks/useFetchQuery";
 import { Colors } from "../constants/Colors";
 import { useThemeColors } from "../hooks/useThemeColors";
-import { formatPokemonHeight, formatPokemonWeight, getPokemonArtwork } from "../functions/pokemon";
+import { basePokemonStats, formatPokemonHeight, formatPokemonWeight, getPokemonArtwork } from "../functions/pokemon";
 import { Card } from "../components/Card";
 import { PokemonType } from "../components/pokemon/PokemonType";
 import { PokemonSpec } from "../components/pokemon/PokemonSpec";
@@ -21,8 +21,9 @@ export default function Pokemon() {
     const colorType = mainType ? Colors.type[mainType] : colors.tint;
     const types = pokemon?.types ?? [];
     const bio = specie?.flavor_text_entries?.find(({language}) => language.name === 'en')?.flavor_text.replaceAll('\n', '. ');
+    const stats = pokemon?.stats ?? basePokemonStats;
     return  (
-        <RootView style={{backgroundColor: colorType}}>
+        <RootView backgroundColor={colorType}>
             <View>
                 <Image source={require("@/assets/images/background-pokeball.png")} width={208} height={208} style={styles.pokeball} />
                 <Row style={styles.header}>
@@ -42,7 +43,7 @@ export default function Pokemon() {
                         height={200}
                     />
                     <Card style={styles.card}>
-                        <Row gap={16}>
+                        <Row gap={16} style={{height: 20}}>
                             {types.map(type => 
                                 <PokemonType name={type.type.name} key={type.type.name} />
                             )}
@@ -55,12 +56,12 @@ export default function Pokemon() {
                             <PokemonSpec style={{ borderStyle: 'solid', borderRightWidth: 1, borderColor: colors.grayLight }}  title={formatPokemonHeight(pokemon?.height)} description="Height" image={require('@/assets/images/height.png')}/>
                             <PokemonSpec title={pokemon?.abilities.slice(0, 2).map(m => m.ability.name).join("\n")} description="Moves"/>
                         </Row>
-                        <ThemedText>{bio}</ThemedText>
+                        <ThemedText style={{height: 30}}>{bio}</ThemedText>
 
                         {/* Stats */}
                         <ThemedText variant="subtitle1" style={{color: colorType}}>Base stats</ThemedText>
                         <View style={{alignSelf: "stretch"}}>
-                            {pokemon?.stats.map(stat => <PokemonStat key={stat.stat.name} name={stat.stat.name} value={stat.base_stat} color={colorType} />)}
+                            {stats.map(stat => <PokemonStat key={stat.stat.name} name={stat.stat.name} value={stat.base_stat} color={colorType} />)}
                         </View>
                     </Card>
                 </View>
