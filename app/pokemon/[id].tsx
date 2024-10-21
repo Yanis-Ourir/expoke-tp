@@ -11,6 +11,7 @@ import { Card } from "../components/Card";
 import { PokemonType } from "../components/pokemon/PokemonType";
 import { PokemonSpec } from "../components/pokemon/PokemonSpec";
 import { PokemonStat } from "../components/pokemon/PokemonStat";
+import { Audio } from "expo-av";
 
 export default function Pokemon() {
     const colors = useThemeColors();
@@ -22,6 +23,22 @@ export default function Pokemon() {
     const types = pokemon?.types ?? [];
     const bio = specie?.flavor_text_entries?.find(({language}) => language.name === 'en')?.flavor_text.replaceAll('\n', '. ');
     const stats = pokemon?.stats ?? basePokemonStats;
+    const onImagePress = () => {
+        const cry = pokemon?.cries.latest;
+        if(!cry) return;
+        Audio.Sound.createAsync({uri: cry}).then(({sound}) => sound.playAsync());
+    }
+    const onPrevious = () => {
+        router.replace({pathname: '/pokemon/[id]', params: {id: Math.max(parseInt(params.id, 10) - 1, 1)}})
+    }
+
+    const onNext = () => {
+        router.replace({pathname: '/pokemon/[id]', params: {id: Math.min(parseInt(params.id, 10) + 1, 300)}})
+    }
+
+    const isFirst = parseInt(params.id, 10) === 1;
+    const isLast = parseInt(params.id, 10) === 300;
+
     return  (
         <RootView backgroundColor={colorType}>
             <View>
@@ -35,14 +52,38 @@ export default function Pokemon() {
                     </Pressable>
                     <ThemedText color="grayWhite" variant="subtitle2">#{params.id.padStart(3, '0')}</ThemedText>
                 </Row>
-                <View style={styles.body}>
-                    <Image
-                        style={styles.artwork}
-                        source={{ uri: getPokemonArtwork(params.id) }}
-                        width={200}
-                        height={200}
-                    />
                     <Card style={styles.card}>
+                        <Row style={styles.imageRow}>
+                            {isFirst ? (
+                                <View style={{ width: 24, height: 24 }} />
+                            ) : (
+                                <Pressable onPress={onPrevious}>
+                                    <Image
+                                        source={require('@/assets/images/previous-pokemon.png')}
+                                        width={24}
+                                        height={24}
+                                    />
+                                </Pressable>
+                            )}
+                            <Pressable onPress={onImagePress}>
+                                <Image
+                                    source={{ uri: getPokemonArtwork(params.id) }}
+                                    width={200}
+                                    height={200}
+                                />
+                            </Pressable>
+                            {isLast ? (
+                                <View style={{ width: 24, height: 24 }} />
+                            ) : (
+                                <Pressable onPress={onNext}>
+                                    <Image
+                                        source={require('@/assets/images/next-pokemon.png')}
+                                        width={24}
+                                        height={24}
+                                    />
+                                </Pressable>
+                            )}
+                        </Row>
                         <Row gap={16} style={{height: 20}}>
                             {types.map(type => 
                                 <PokemonType name={type.type.name} key={type.type.name} />
@@ -64,7 +105,6 @@ export default function Pokemon() {
                             {stats.map(stat => <PokemonStat key={stat.stat.name} name={stat.stat.name} value={stat.base_stat} color={colorType} />)}
                         </View>
                     </Card>
-                </View>
             </View>
         </RootView>
     )
@@ -81,20 +121,22 @@ const styles = StyleSheet.create({
         right: 8,
         top: 8
     },
-    artwork: {
+    imageRow: {
         position: "absolute",
         top: -140,
-        alignSelf: "center",
         zIndex: 2,
-    },
-    body: {
-        marginTop: 144,
+        justifyContent: "space-between",
+        left: 0,
+        right: 0,
+        paddingHorizontal: 20,
     },
     card: {
+        marginTop: 144,
         paddingHorizontal: 20,
         paddingTop: 60,
         gap: 16,
         alignItems: "center",
+        overflow: "visible",
         paddingBottom: 20,
     }
 })

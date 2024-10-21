@@ -63,7 +63,6 @@ export default function useFetchQuery<T extends keyof API>(path: T, params?: Rec
     return useQuery({
         queryKey: [localUrl],
         queryFn: async () => {
-            await wait(1);
             return fetch(localUrl).then((response) => response.json() as Promise<API[T]>);
         }
     })
@@ -74,7 +73,6 @@ export function useInfiniteFetchQuery<T extends keyof API>(path: T) {
         queryKey: [path],
         initialPageParam: endpoint + path,
         queryFn: async ({pageParam}) => {
-            await wait(1);
             return fetch(pageParam, {
                 headers: {
                     Accept: "application/json"
@@ -88,10 +86,4 @@ export function useInfiniteFetchQuery<T extends keyof API>(path: T) {
             return null;
         }
     })
-}
-
-function wait(duration: number) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, duration * 1000);
-    });
 }
