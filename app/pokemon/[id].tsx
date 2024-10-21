@@ -12,12 +12,65 @@ import { PokemonType } from "../components/pokemon/PokemonType";
 import { PokemonSpec } from "../components/pokemon/PokemonSpec";
 import { PokemonStat } from "../components/pokemon/PokemonStat";
 import { Audio } from "expo-av";
+import PagerView from "react-native-pager-view";
+import { useRef, useState } from "react";
 
 export default function Pokemon() {
-    const colors = useThemeColors();
     const params = useLocalSearchParams() as {id: string};
-    const {data: pokemon} = useFetchQuery("/pokemon/[id]", {id: params.id});
-    const {data: specie} = useFetchQuery("/pokemon-species/[id]", {id: params.id});
+    const [id, setId] = useState(parseInt(params.id, 10));
+    const offset = useRef(1);
+    const pager = useRef<PagerView>(null);
+
+    const onPageSelected = (e: {nativeEvent: {position: number}}) => {
+        offset.current = e.nativeEvent.position - 1;
+    }
+
+    const onPageScrollStateChanged = (e: { nativeEvent: { pageScrollState: string } }) => {
+        if(e.nativeEvent.pageScrollState !== "idle") return;
+        if(offset.current === -1 && id === 2) return;
+        if(offset.current !== 1 && id === 299) return;
+        
+
+        if(offset.current !== 0) {
+            setId(id + offset.current);
+            offset.current = 0;
+            pager.current?.setPageWithoutAnimation(1);
+        }
+    }
+
+    const onPrevious = () => {
+        pager.current?.setPage(0);
+    }
+
+    const onNext = () => {
+        pager.current?.setPage(2 + offset.current);
+    }
+
+    return (
+        <PagerView 
+            ref={pager}
+            style={{flex: 1}}
+            onPageSelected={onPageSelected}
+            onPageScrollStateChanged={onPageScrollStateChanged}
+            initialPage={1} 
+        >
+            <PokemonView key={id - 1} id={id - 1} onNext={onNext} onPrevious={onPrevious}/>
+            <PokemonView key={id} id={id} onNext={onNext} onPrevious={onPrevious}/>
+            <PokemonView key={id + 1} id={id + 1} onNext={onNext} onPrevious={onPrevious}/>
+        </PagerView>
+    )
+}
+
+type Props = {
+    id: number;
+    onPrevious: () => void;
+    onNext: () => void;
+}
+
+function PokemonView({id, onPrevious, onNext} : Props) {
+    const colors = useThemeColors();
+    const {data: pokemon} = useFetchQuery("/pokemon/[id]", {id: id});
+    const {data: specie} = useFetchQuery("/pokemon-species/[id]", {id: id});
     const mainType = pokemon?.types[0].type.name;
     const colorType = mainType ? Colors.type[mainType] : colors.tint;
     const types = pokemon?.types ?? [];
@@ -28,16 +81,10 @@ export default function Pokemon() {
         if(!cry) return;
         Audio.Sound.createAsync({uri: cry}).then(({sound}) => sound.playAsync());
     }
-    const onPrevious = () => {
-        router.replace({pathname: '/pokemon/[id]', params: {id: Math.max(parseInt(params.id, 10) - 1, 1)}})
-    }
+ 
 
-    const onNext = () => {
-        router.replace({pathname: '/pokemon/[id]', params: {id: Math.min(parseInt(params.id, 10) + 1, 300)}})
-    }
-
-    const isFirst = parseInt(params.id, 10) === 1;
-    const isLast = parseInt(params.id, 10) === 300;
+    const isFirst = id === 1;
+    const isLast = id === 300;
 
     return  (
         <RootView backgroundColor={colorType}>
@@ -50,7 +97,7 @@ export default function Pokemon() {
                             <ThemedText variant="headline" color="grayWhite" style={{textTransform: "capitalize"}}>{pokemon?.name}</ThemedText>
                         </Row>
                     </Pressable>
-                    <ThemedText color="grayWhite" variant="subtitle2">#{params.id.padStart(3, '0')}</ThemedText>
+                    <ThemedText color="grayWhite" variant="subtitle2">#{id.toString().padStart(3, '0')}</ThemedText>
                 </Row>
                     <Card style={styles.card}>
                         <Row style={styles.imageRow}>
@@ -67,7 +114,7 @@ export default function Pokemon() {
                             )}
                             <Pressable onPress={onImagePress}>
                                 <Image
-                                    source={{ uri: getPokemonArtwork(params.id) }}
+                                    source={{ uri: getPokemonArtwork(id) }}
                                     width={200}
                                     height={200}
                                 />
